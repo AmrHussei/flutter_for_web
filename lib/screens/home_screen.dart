@@ -1,110 +1,113 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_for_web/core/utils/assets_data.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../widgets/screen_title.dart';
+import '../widgets/sidebar.dart';
+import '../widgets/task_drag_target.dart';
+import '../models/stage_model.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: Scaffold(
-      body: LayoutBuilder(builder: (context, constraints) {
-        if (constraints.maxWidth > 1200) {
-          return DesktopLayout();
-        } else {
-          return TabletLayout();
-        }
-      }),
-    ));
-  }
-}
+    List<Stage> stages = Stage.stages;
 
-class DesktopLayout extends StatelessWidget {
-  const DesktopLayout({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      child: Row(
-        children: [
-          const SideBar(),
-        ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFEEF2F5),
+      body: LayoutBuilder(
+        builder: (
+          BuildContext context,
+          BoxConstraints constraints,
+        ) {
+          if (constraints.maxWidth > 1200) {
+            return _DesktopLayout(
+              constraints: constraints,
+              stages: stages,
+            );
+          } else {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: _TabletLayout(
+                constraints: constraints,
+                stages: stages,
+              ),
+            );
+          }
+        },
       ),
     );
   }
 }
 
-class TabletLayout extends StatelessWidget {
-  const TabletLayout({super.key});
+class _DesktopLayout extends StatelessWidget {
+  const _DesktopLayout({
+    Key? key,
+    required this.constraints,
+    required this.stages,
+  }) : super(key: key);
+
+  final BoxConstraints constraints;
+  final List<Stage> stages;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.amber,
+      margin: const EdgeInsets.all(20.0),
       child: Row(
         children: [
-          const SideBar(),
-        ],
-      ),
-    );
-  }
-}
-
-class SideBar extends StatelessWidget {
-  const SideBar({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    List<String> icons = [
-      AssetsData.home,
-      AssetsData.options,
-      AssetsData.msg,
-      AssetsData.beforThelast,
-      AssetsData.setting
-    ];
-
-    return Container(
-      width: 90.w,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30.sp),
-      ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 60.w,
-            width: 60.w,
-            child: SvgPicture.asset(
-              AssetsData.logo,
-              fit: BoxFit.fill,
+          const Sidebar(),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ScreenTitle(),
+                Expanded(
+                  child: TaskDragTarget(
+                    stages: stages,
+                    constraints: constraints,
+                  ),
+                ),
+              ],
             ),
           ),
-          const Spacer(
-            flex: 1,
+        ],
+      ),
+    );
+  }
+}
+
+class _TabletLayout extends StatelessWidget {
+  const _TabletLayout({
+    Key? key,
+    required this.constraints,
+    required this.stages,
+  }) : super(key: key);
+
+  final BoxConstraints constraints;
+  final List<Stage> stages;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(20.0),
+      child: Row(
+        children: [
+          const Sidebar(),
+          const SizedBox(width: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const ScreenTitle(),
+              SizedBox(
+                height: constraints.maxHeight * 0.8,
+                child: TaskDragTarget(
+                  stages: stages,
+                  constraints: constraints,
+                ),
+              ),
+            ],
           ),
-          ListView.separated(
-            itemBuilder: (context, index) {
-              return IconButton(
-                  onPressed: () {},
-                  iconSize: 45.sp,
-                  icon: Image.asset(
-                    icons[index],
-                    fit: BoxFit.fill,
-                  ));
-            },
-            separatorBuilder: (context, index) {
-              return SizedBox(height: 20.h);
-            },
-            shrinkWrap: true,
-            itemCount: icons.length,
-          ),
-          const Spacer(
-            flex: 5,
-          )
         ],
       ),
     );
